@@ -1,0 +1,327 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>永豐金 API 用量評估工具 — UI 互動文件（開發者）</title>
+<style>
+  :root { --ink:#2c3e50; --mut:#7f8c8d; --line:#dfe4e8; --blue:#2780e3; --green:#27ae60; --red:#e0294a; --bg:#f6f8fa; --side:#1f2b38; }
+  * { box-sizing:border-box; }
+  body { font-family:"Microsoft JhengHei UI","Segoe UI",sans-serif; color:var(--ink); margin:0; background:var(--bg); line-height:1.7; }
+
+  /* ── 版面：左固定側欄 + 右內容 ── */
+  .layout { display:flex; min-height:100vh; }
+  nav.side { width:230px; flex:0 0 230px; background:var(--side); color:#cdd6df; position:sticky; top:0; align-self:flex-start; height:100vh; overflow-y:auto; padding:20px 0; }
+  nav.side .brand { color:#fff; font-weight:bold; padding:0 20px 14px; font-size:.98em; border-bottom:1px solid #33465a; margin-bottom:8px; }
+  nav.side a { display:block; color:#cdd6df; text-decoration:none; padding:8px 20px; font-size:.9em; border-left:3px solid transparent; }
+  nav.side a:hover { background:#2a3948; color:#fff; }
+  nav.side a.active { background:#2a3948; color:#fff; border-left-color:var(--blue); }
+  main { flex:1; min-width:0; }
+  .wrap { max-width:940px; margin:0 auto; padding:32px 28px 80px; }
+
+  h1 { font-size:1.5em; border-bottom:2px solid var(--blue); padding-bottom:8px; }
+  h2 { font-size:1.2em; margin-top:0; border-left:4px solid var(--blue); padding-left:10px; }
+  h3 { font-size:1.05em; margin-top:1.6em; }
+  section { scroll-margin-top:16px; }
+  table { border-collapse:collapse; width:100%; background:#fff; font-size:.9em; }
+  th,td { border:1px solid var(--line); padding:7px 10px; text-align:left; vertical-align:top; }
+  th { background:#eef3f7; }
+  code { background:#eceff1; padding:1px 5px; border-radius:3px; font-size:.9em; }
+  .note { color:var(--mut); font-size:.9em; }
+  .flow { background:#fff; border:1px solid var(--line); border-radius:6px; padding:14px 18px; font-size:.9em; white-space:pre; overflow-x:auto; font-family:Consolas,monospace; line-height:1.9; }
+
+  /* ── 摺疊區塊（互動）── */
+  details { background:#fff; border:1px solid var(--line); border-radius:6px; margin:14px 0; overflow:hidden; }
+  details > summary { cursor:pointer; padding:12px 16px; font-weight:bold; background:#eef3f7; list-style:none; user-select:none; }
+  details > summary::-webkit-details-marker { display:none; }
+  details > summary::before { content:"▸ "; color:var(--blue); }
+  details[open] > summary::before { content:"▾ "; }
+  details .inner { padding:8px 18px 18px; }
+
+  /* ── 主視窗 mock ── */
+  .win { background:#fff; border:1px solid #b8c2cc; border-radius:8px; box-shadow:0 6px 24px rgba(0,0,0,.12); overflow:hidden; margin:16px 0; }
+  .tbar { background:#f0f2f4; padding:7px 12px; display:flex; align-items:center; gap:8px; border-bottom:1px solid var(--line); font-size:.85em; }
+  .tbar .ico { width:16px; height:16px; background:var(--blue); border-radius:3px; display:inline-block; }
+  .tbar .btns { margin-left:auto; color:var(--mut); letter-spacing:6px; }
+  .wbody { padding:20px 24px; }
+  .status { color:var(--green); font-weight:bold; }
+  .status.off { color:var(--mut); }
+  hr.sep { border:none; border-top:1px solid var(--line); margin:10px 0 16px; }
+  .gauge-row { display:flex; align-items:center; gap:36px; flex-wrap:wrap; padding:8px 0 16px; }
+  .meter { width:170px; height:170px; border-radius:50%; display:flex; flex-direction:column; align-items:center; justify-content:center;
+           background:conic-gradient(var(--blue) 0 24%, #e9edf1 24% 100%); position:relative; }
+  .meter.warn { background:conic-gradient(var(--red) 0 85%, #e9edf1 85% 100%); }
+  .meter .inner { width:126px; height:126px; border-radius:50%; background:#fff; display:flex; flex-direction:column; align-items:center; justify-content:center; }
+  .meter .pct { font-size:1.7em; font-weight:bold; }
+  .meter.warn .pct { color:var(--red); }
+  .meter .sub { color:var(--mut); font-size:.78em; }
+  .detail div { padding:3px 0; }
+  .detail .big { font-size:1.15em; font-weight:bold; }
+  .last { color:var(--mut); font-size:.86em; padding:4px 0 12px; }
+  .btnrow { display:flex; gap:10px; }
+  .btn { flex:3; text-align:center; padding:9px 0; border-radius:5px; background:var(--blue); color:#fff; font-weight:bold; }
+  .btn.sec { flex:1; background:#fff; color:var(--mut); border:1px solid var(--line); font-weight:normal; }
+
+  /* ── 對話框 mock ── */
+  .dlg { max-width:560px; }
+  .dlg .frow { display:flex; align-items:center; gap:10px; padding:4px 0; }
+  .dlg .frow label { width:92px; }
+  .dlg .fld { flex:1; border:1px solid var(--line); border-radius:4px; padding:5px 8px; color:var(--mut); background:#fbfcfd; }
+
+  @media (max-width:820px) {
+    nav.side { display:none; }
+  }
+</style>
+</head>
+<body>
+<div class="layout">
+
+<nav class="side">
+  <div class="brand">UI 互動文件<br><span style="font-weight:normal;font-size:.85em;color:#8fa0b0">開發者驗 UI 用</span></div>
+  <a href="#overview">0. 概觀與結構</a>
+  <a href="#map">1. 畫面／元件對應表</a>
+  <a href="#mainwin">2. 主視窗（儀表板）</a>
+  <a href="#dialog">3. 金鑰設定對話框</a>
+  <a href="#flow">4. 互動流程</a>
+  <a href="#state">5. 狀態管理</a>
+  <a href="#checklist">6. 驗收檢核表</a>
+</nav>
+
+<main>
+<div class="wrap">
+
+<h1 id="top">永豐金 API 用量評估工具 — UI 互動文件（開發者）</h1>
+<p class="note">目的：不必啟動程式即可核對 UI 版面與互動行為是否做對。版面示意為 HTML mock，非截圖。左側導覽可跳章，各對應表可展開／收合。</p>
+
+<!-- ══════════ 0 ══════════ -->
+<section id="overview">
+<h2>0. 概觀與程式結構</h2>
+<p>本工具採 <b>MVP</b> 分層：<b>View</b>（<code>views/</code>，純 UI，不 import shioaji）、<b>Model</b>（<code>models/</code>，資料與外部服務，不 import tkinter）、<b>Presenter</b>（<code>presenters/</code>，唯一跨層橋樑）。UI 相關只有兩個視窗類別：</p>
+<table>
+  <tr><th>UI 元素</th><th>類別</th><th>檔案</th></tr>
+  <tr><td>主視窗儀表板</td><td><code>MainView(tb.Window)</code></td><td><code>views/main_view.py</code></td></tr>
+  <tr><td>金鑰設定對話框</td><td><code>LoginDialog(tk.Toplevel)</code></td><td><code>views/login_dialog.py</code></td></tr>
+</table>
+<p class="note">兩個 View 都不含業務邏輯：MainView 只暴露 <code>on_query/on_settings/on_close</code> callback 與 <code>render_usage/render_status/set_busy/show_error</code> 更新方法；LoginDialog 只把輸入放進 <code>self.result</code>。實際流程由 <code>UsagePresenter</code>（<code>presenters/usage_presenter.py</code>）驅動。</p>
+</section>
+
+<!-- ══════════ 1 ══════════ -->
+<section id="map">
+<h2>1. 畫面／元件對應表（元件 → 原始檔與 class/function）</h2>
+
+<details open>
+<summary>主視窗 MainView（views/main_view.py）</summary>
+<div class="inner">
+<table>
+  <tr><th>畫面元件</th><th>成員屬性</th><th>建立處</th><th>更新處</th></tr>
+  <tr><td>登入狀態列（● 未連線／已登入）</td><td><code>_status_lbl</code></td><td><code>_build_widgets()</code> row=0</td><td><code>render_status()</code></td></tr>
+  <tr><td>流量圓形儀表（%）</td><td><code>_meter</code>（<code>tb.Meter</code>）</td><td><code>_build_widgets()</code> row=2</td><td><code>render_usage()</code></td></tr>
+  <tr><td>已用流量</td><td><code>_used_lbl</code></td><td><code>_build_widgets()</code> detail</td><td><code>render_usage()</code></td></tr>
+  <tr><td>每日上限</td><td><code>_limit_lbl</code></td><td><code>_build_widgets()</code> detail</td><td><code>render_usage()</code></td></tr>
+  <tr><td>剩餘流量</td><td><code>_remain_lbl</code></td><td><code>_build_widgets()</code> detail</td><td><code>render_usage()</code></td></tr>
+  <tr><td>目前連線數 X / 5</td><td><code>_conn_lbl</code></td><td><code>_build_widgets()</code> detail</td><td><code>render_usage()</code></td></tr>
+  <tr><td>上次查詢資訊列</td><td><code>_last_lbl</code></td><td><code>_build_widgets()</code> row=3</td><td><code>render_usage()</code></td></tr>
+  <tr><td>「查詢」按鈕</td><td><code>_query_btn</code></td><td><code>_build_widgets()</code> row=4</td><td><code>set_busy()</code>（文字/狀態）</td></tr>
+  <tr><td>「金鑰設定」按鈕</td><td><code>_settings_btn</code></td><td><code>_build_widgets()</code> row=4</td><td><code>set_busy()</code>（停用）</td></tr>
+  <tr><td>錯誤彈窗</td><td>—（<code>messagebox</code>）</td><td>—</td><td><code>show_error()</code></td></tr>
+</table>
+<p class="note">按鈕點擊透過轉接器 <code>_handle_query/_handle_settings/_handle_close</code> 呼叫 presenter 掛上的 <code>on_query/on_settings/on_close</code>；關閉走 <code>protocol("WM_DELETE_WINDOW", _handle_close)</code>。</p>
+</div>
+</details>
+
+<details>
+<summary>金鑰設定對話框 LoginDialog（views/login_dialog.py）</summary>
+<div class="inner">
+<table>
+  <tr><th>畫面元件</th><th>成員屬性</th><th>行為</th></tr>
+  <tr><td>API Key 輸入框</td><td><code>_key_var</code>（<code>StringVar</code>）</td><td>預填 <code>initial_key</code></td></tr>
+  <tr><td>Secret Key 輸入框（星號遮蔽）</td><td><code>_secret_var</code></td><td>預填 <code>initial_secret</code>，<code>show="*"</code></td></tr>
+  <tr><td>帳戶模式 Radiobutton（真實／模擬）</td><td><code>_simulation_var</code>（<code>BooleanVar</code>）</td><td>預選 <code>initial_simulation</code></td></tr>
+  <tr><td>「確認」按鈕</td><td>—</td><td><code>_confirm()</code>：空欄警告；否則寫 <code>self.result</code> 後關閉</td></tr>
+  <tr><td>「取消」按鈕 / 關窗</td><td>—</td><td><code>_cancel()</code>：<code>self.result=None</code></td></tr>
+</table>
+</div>
+</details>
+</section>
+
+<!-- ══════════ 2 ══════════ -->
+<section id="mainwin">
+<h2>2. 主視窗（儀表板）</h2>
+<ul>
+  <li><b>標題</b>：<code>永豐金 API 用量評估工具 - by Alex Yu - v&lt;yyyyMMdd&gt;</code>（來源 <code>utils.app_title()</code>；開發＝今天，打包＝打包日）</li>
+  <li><b>位置/大小</b>：左上角在螢幕 (10%, 10%)，寬＝螢幕 50%、高＝螢幕 50%；<b>同時為最小尺寸</b>（<code>minsize</code>，只能放大）</li>
+  <li><b>圖示</b>：標題列、Windows 工作列、Alt-Tab 皆顯示 <code>Shioaji_Usage.ico</code>（靠 <code>SetCurrentProcessExplicitAppUserModelID</code> + <code>iconbitmap(default=)</code>）</li>
+</ul>
+
+<div class="win">
+  <div class="tbar"><span class="ico"></span> 永豐金 API 用量評估工具 - by Alex Yu - v20260712 <span class="btns">— ▢ ✕</span></div>
+  <div class="wbody">
+    <div class="status">● 已登入（真實帳戶）</div>
+    <hr class="sep">
+    <div class="gauge-row">
+      <div class="meter"><div class="inner"><span class="pct">24 %</span><span class="sub">今日流量用量</span></div></div>
+      <div class="detail">
+        <div class="big">已用流量：123.5 MB</div>
+        <div>每日上限：512.0 MB</div>
+        <div>剩餘流量：388.5 MB</div>
+        <div style="padding-top:10px">目前連線數：1 / 5</div>
+      </div>
+    </div>
+    <div class="last">上次查詢：2026-07-12 14:30:05（真實帳戶）</div>
+    <div class="btnrow"><div class="btn">查詢</div><div class="btn sec">金鑰設定</div></div>
+  </div>
+</div>
+
+<h3>用量 ≥ 80% 的警示狀態</h3>
+<div class="win">
+  <div class="tbar"><span class="ico"></span> 永豐金 API 用量評估工具 - by Alex Yu - v20260712 <span class="btns">— ▢ ✕</span></div>
+  <div class="wbody">
+    <div class="status">● 已登入（模擬帳戶）</div>
+    <hr class="sep">
+    <div class="gauge-row">
+      <div class="meter warn"><div class="inner"><span class="pct">85 %</span><span class="sub">今日流量用量</span></div></div>
+      <div class="detail">
+        <div class="big">已用流量：429.2 MB</div>
+        <div>每日上限：500.0 MB</div>
+        <div>剩餘流量：70.8 MB</div>
+        <div style="padding-top:10px">目前連線數：3 / 5</div>
+      </div>
+    </div>
+    <div class="last">上次查詢：2026-07-12 14:31:00（模擬帳戶）</div>
+    <div class="btnrow"><div class="btn">查詢</div><div class="btn sec">金鑰設定</div></div>
+  </div>
+</div>
+
+<h3>元件狀態一覽</h3>
+<table>
+  <tr><th>元件</th><th>狀態</th><th>表現（決定於）</th></tr>
+  <tr><td rowspan="3">登入狀態列 <code>_status_lbl</code></td><td>未連線</td><td><code>● 未連線</code>（灰）— <code>render_status(False)</code></td></tr>
+  <tr><td>已登入（真實）</td><td><code>● 已登入（真實帳戶）</code>（綠）— <code>render_status(True, False)</code></td></tr>
+  <tr><td>已登入（模擬）</td><td><code>● 已登入（模擬帳戶）</code>（綠）— <code>render_status(True, True)</code></td></tr>
+  <tr><td rowspan="3">流量儀表 <code>_meter</code></td><td>無紀錄（record=None）</td><td>0%、<code>info</code> 藍；明細全部「—」</td></tr>
+  <tr><td>&lt; 80%</td><td><code>bootstyle="info"</code>（藍）</td></tr>
+  <tr><td>≥ 80%（<code>WARN_THRESHOLD</code>）</td><td><code>bootstyle="danger"</code>（紅）警示</td></tr>
+  <tr><td rowspan="2">上次查詢列 <code>_last_lbl</code></td><td>無紀錄</td><td><code>尚無查詢紀錄</code></td></tr>
+  <tr><td>有紀錄</td><td><code>上次查詢：&lt;時間&gt;（真實/模擬帳戶）</code>；來源＝上次成功查詢，重開仍在</td></tr>
+  <tr><td rowspan="2">查詢按鈕 <code>_query_btn</code></td><td>閒置</td><td><code>查詢</code>，可按</td></tr>
+  <tr><td>查詢中</td><td><code>查詢中…</code>，兩顆按鈕皆停用（<code>set_busy(True)</code> 防連點）</td></tr>
+</table>
+</section>
+
+<!-- ══════════ 3 ══════════ -->
+<section id="dialog">
+<h2>3. 金鑰設定對話框（LoginDialog）</h2>
+<div class="win dlg">
+  <div class="tbar"><span class="ico"></span> 🔑 永豐金證券 Shioaji API 金鑰設定 <span class="btns">✕</span></div>
+  <div class="wbody">
+    <div style="font-weight:bold">永豐金證券 Shioaji API 憑證設定</div>
+    <div class="note" style="padding-bottom:10px">API Key 與 Secret Key 請至 www.sinotrade.com.tw/newweb/PythonAPIKey/ 申請</div>
+    <div class="frow"><label>API Key：</label><span class="fld">（預填已儲存的金鑰）</span></div>
+    <div class="frow"><label>Secret Key：</label><span class="fld">＊＊＊＊＊＊＊＊（星號遮蔽）</span></div>
+    <hr class="sep">
+    <div class="frow"><label>帳戶模式：</label><span>◉ 🟢 真實帳戶　○ 🧪 模擬帳戶</span></div>
+    <div class="note" style="padding:8px 0 12px">金鑰會加密儲存於本機（綁定目前的 Windows 使用者帳戶），下次查詢免重輸。<br>本工具登入時不下載合約資料，通常數秒內完成。</div>
+    <div class="btnrow"><div class="btn" style="flex:1">確認</div><div class="btn sec" style="flex:1">取消</div></div>
+  </div>
+</div>
+<ul>
+  <li>modal（<code>grab_set</code>）、螢幕置中；欄位空白按「確認」→ <code>_confirm()</code> 警告「請填寫 API Key 與 Secret Key」，不關閉</li>
+  <li>「取消」或關閉視窗 → <code>_cancel()</code>，<code>self.result=None</code>，不改變任何狀態</li>
+  <li>回傳給 presenter：<code>self.result = (api_key, secret_key, simulation)</code> 或 <code>None</code>；presenter 以 <code>wait_window</code> 取回</li>
+</ul>
+</section>
+
+<!-- ══════════ 4 ══════════ -->
+<section id="flow">
+<h2>4. 互動流程（使用者動作 → handler → model 呼叫 → UI 更新）</h2>
+
+<h3>4.1 啟動</h3>
+<div class="flow">main() → presenter.start()
+  → usage_store.load_last_usage()
+       ├─ 有紀錄 → view.render_usage(record)：顯示上次數值與時間
+       └─ 無紀錄 → view.render_usage(None)：儀表全「—」、「尚無查詢紀錄」
+  → view.render_status(False)：● 未連線
+※ 啟動一律不連線、不登入（D2）</div>
+
+<h3>4.2 查詢</h3>
+<div class="flow">點「查詢」→ _handle_query → on_query → presenter.query()
+  ├─ client.is_logged_in ─→ set_busy(True) → 背景 _fetch_usage_job → client.get_usage()
+  └─ 未登入 → config_store.load_keys()
+       ├─ 有金鑰 → 直接用存檔金鑰＋上次模式
+       └─ 無金鑰 → _ask_credentials → LoginDialog（取消＝return，不 busy）
+       → set_busy(True) → 背景 _login_and_fetch_job
+            → client.login(fetch_contract=False)
+                 成功 → view.after → _save_credentials（save_keys 加密＋save_config 記模式）
+                      → _fetch_usage_job → client.get_usage()
+                 失敗 → view.after → _on_login_failed
+                      → set_busy(False)+render_status(False)
+                      → show_error(中文說明＋login_retry_guidance) → open_settings()
+usage 成功 → view.after → _on_usage_ok
+     → usage_store.save_last_usage(record)（覆寫＝舊資料即刪除）
+     → render_usage(record) + render_status(True)（保持登入 D4）+ set_busy(False)
+usage 失敗 → view.after → _on_usage_failed：set_busy(False)+show_error；畫面保留舊紀錄</div>
+<p class="note"><code>login</code>／<code>usage</code> 為網路呼叫，一律走 <code>_run_in_thread</code> 背景執行緒，再以 <code>view.after(0, ...)</code> 回主執行緒更新 UI（tkinter 只能在主執行緒動 UI）。</p>
+
+<h3>4.3 金鑰設定</h3>
+<div class="flow">點「金鑰設定」→ on_settings → presenter.open_settings()
+  → load_keys() 預填 → _ask_credentials → LoginDialog
+  確認 → _save_credentials（立即加密儲存新金鑰＋新模式）
+       → 若 client.is_logged_in → client.logout() + render_status(False)
+         （下次查詢用新設定重新登入，D4）
+  取消 → 無任何變更</div>
+
+<h3>4.4 關閉</h3>
+<div class="flow">視窗 ✕ → _handle_close → on_close → presenter.close()
+  → 若 is_logged_in → client.logout()（釋放連線）→ view.destroy()</div>
+</section>
+
+<!-- ══════════ 5 ══════════ -->
+<section id="state">
+<h2>5. 狀態管理（狀態放哪、如何傳遞）</h2>
+<p>沒有全域狀態容器；狀態分散在三處，一律經 Presenter 讀寫、單向推給 View 呈現。</p>
+<table>
+  <tr><th>狀態</th><th>存放位置</th><th>持久性</th><th>誰改它 / 如何傳遞</th></tr>
+  <tr><td>登入狀態、帳戶模式（是否模擬）、<code>Shioaji</code> 連線物件</td><td><code>ShioajiClient._logged_in / _simulation / _api</code>（記憶體）</td><td>執行期；有 <code>threading.Lock</code> 保護（背景執行緒會動）</td><td><code>login/logout</code> 改；presenter 讀 <code>is_logged_in/simulation</code> → <code>render_status</code></td></tr>
+  <tr><td>上次選擇的帳戶模式</td><td><code>UsagePresenter.cfg</code> ←→ <code>.data/config.json</code></td><td>落地（明文 JSON）</td><td><code>load_config</code> 啟動載入；查詢/設定成功 <code>save_config</code> 寫回</td></tr>
+  <tr><td>API 金鑰</td><td><code>.data/secrets.bin</code>（加密）</td><td>落地（DPAPI／Fernet）</td><td><code>save_keys/load_keys</code>；<b>不進 View、不留記憶體單例</b>，用完即傳參</td></tr>
+  <tr><td>上次查詢數值</td><td><code>.data/last_usage.json</code></td><td>落地（單筆整檔覆寫）</td><td><code>save_last_usage</code> 寫、<code>load_last_usage</code> 讀 → <code>render_usage</code></td></tr>
+  <tr><td>UI 呈現狀態（儀表數值、按鈕忙碌）</td><td>View 各 widget</td><td>不持久，View 內</td><td>只由 presenter 呼叫 <code>render_usage/render_status/set_busy</code> 設定，View 不自行決策</td></tr>
+</table>
+<p class="note">傳遞方向恆為單向：<b>Model（檔案/記憶體）→ Presenter 組 record → View.render_*</b>。View 從不反向讀 Model，也不保存業務狀態；使用者輸入只經 callback 交回 Presenter。</p>
+</section>
+
+<!-- ══════════ 6 ══════════ -->
+<section id="checklist">
+<h2>6. 驗收檢核表</h2>
+<table>
+  <tr><th>#</th><th>檢核項</th></tr>
+  <tr><td>1</td><td>視窗出現在螢幕 10%,10%、佔寬高各 50%；無法縮得比預設更小</td></tr>
+  <tr><td>2</td><td>標題列與工作列圖示皆為專屬 icon；標題含 by Alex Yu 與 v 日期</td></tr>
+  <tr><td>3</td><td>首次啟動顯示「尚無查詢紀錄」；查詢成功後重開程式，直接顯示上次數值（狀態＝未連線）</td></tr>
+  <tr><td>4</td><td>查詢中按鈕變「查詢中…」且兩顆皆不可連點；完成後恢復</td></tr>
+  <tr><td>5</td><td>用量 ≥80% 儀表變紅（danger）</td></tr>
+  <tr><td>6</td><td>第二次按查詢不重新登入（明顯較快，走 _fetch_usage_job）</td></tr>
+  <tr><td>7</td><td>錯誤金鑰 → 中文錯誤說明 + 自動開金鑰對話框，程式不崩潰</td></tr>
+  <tr><td>8</td><td>金鑰只存在加密檔 secrets.bin；config.json 內無明文金鑰</td></tr>
+  <tr><td>9</td><td>改金鑰/模式後若原本已登入 → 自動登出，下次查詢用新設定</td></tr>
+</table>
+</section>
+
+</div>
+</main>
+</div>
+
+<script>
+  // 側欄依捲動高亮目前章節（純原生，無外部相依）
+  var links = Array.prototype.slice.call(document.querySelectorAll('nav.side a'));
+  var secs = links.map(function(a){ return document.querySelector(a.getAttribute('href')); });
+  function onScroll(){
+    var y = window.scrollY + 80, cur = 0;
+    for (var i=0;i<secs.length;i++){ if (secs[i] && secs[i].offsetTop <= y) cur = i; }
+    links.forEach(function(a,i){ a.classList.toggle('active', i===cur); });
+  }
+  window.addEventListener('scroll', onScroll, {passive:true});
+  onScroll();
+</script>
+</body>
+</html>

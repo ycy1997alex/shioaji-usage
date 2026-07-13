@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>永豐金 API 用量評估工具 — 使用說明書</title>
+<style>
+  :root { --ink:#2c3e50; --mut:#7f8c8d; --line:#dfe4e8; --blue:#2780e3; --green:#27ae60; --red:#e0294a; --bg:#f6f8fa; }
+  * { box-sizing:border-box; }
+  body { font-family:"Microsoft JhengHei UI","Segoe UI",sans-serif; color:var(--ink); margin:0; background:var(--bg); line-height:1.8; }
+  .wrap { max-width:880px; margin:0 auto; padding:32px 24px 64px; }
+  h1 { font-size:1.55em; border-bottom:2px solid var(--blue); padding-bottom:8px; margin-bottom:6px; }
+  .ver { color:var(--mut); font-size:.9em; margin:0 0 18px; }
+  h2 { font-size:1.22em; margin-top:2.2em; border-left:4px solid var(--blue); padding-left:10px; }
+  table { border-collapse:collapse; width:100%; background:#fff; font-size:.94em; }
+  th,td { border:1px solid var(--line); padding:8px 12px; text-align:left; vertical-align:top; }
+  th { background:#eef3f7; white-space:nowrap; }
+  code { background:#eceff1; padding:1px 6px; border-radius:3px; font-size:.9em; }
+  .tip { background:#eaf3fd; border-left:4px solid var(--blue); padding:10px 14px; border-radius:0 6px 6px 0; margin:14px 0; font-size:.94em; }
+  .warn { background:#fdf0ee; border-left:4px solid var(--red); padding:10px 14px; border-radius:0 6px 6px 0; margin:14px 0; font-size:.94em; }
+  ol li, ul li { margin:6px 0; }
+  figure { margin:18px 0; text-align:center; }
+  figure svg { max-width:100%; height:auto; border:1px solid var(--line); border-radius:8px; background:#fff; box-shadow:0 4px 16px rgba(0,0,0,.08); }
+  figcaption { color:var(--mut); font-size:.86em; margin-top:8px; }
+  .foot { color:var(--mut); font-size:.85em; margin-top:3em; border-top:1px solid var(--line); padding-top:14px; }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<h1>永豐金 API 用量評估工具 — 使用說明書</h1>
+<p class="ver">適用版本：v20260712（2026-07-12）</p>
+
+<p>這是一個查詢「永豐金證券 Shioaji API 今日用量」的小工具，讓您隨時查看：</p>
+<ul>
+  <li><b>今日流量</b>：已用多少、每日上限多少、還剩多少（永豐金每天重置流量額度）。</li>
+  <li><b>連線數</b>：目前這組憑證佔用的 API 連線數（上限 5 條）。</li>
+</ul>
+<p>您只需要兩個東西：<b>本說明書</b>與 <b>執行檔（.exe）</b>。免安裝，點兩下即可使用。</p>
+
+<!-- ══════════ 快速開始 ══════════ -->
+<h2>快速開始</h2>
+<p>最常見的用法：<b>開啟程式 → 按「查詢」→ 看今日用量</b>。第一次使用需要先準備一組 API 金鑰。</p>
+
+<p><b>第一次使用前：申請 API 金鑰</b></p>
+<ol>
+  <li>您需要有永豐金證券的證券帳戶。</li>
+  <li>到永豐金 API 金鑰申請頁：<b>www.sinotrade.com.tw/newweb/PythonAPIKey/</b>（登入後依指示申請）。</li>
+  <li>申請完成會得到一組 <b>API Key</b> 與 <b>Secret Key</b>。Secret Key 只在申請當下顯示一次，請妥善保存。</li>
+</ol>
+
+<p><b>開始查詢</b></p>
+<ol>
+  <li>點兩下執行檔開啟程式（第一次啟動需解壓縮，等候數秒屬正常）。</li>
+  <li>視窗會出現在螢幕左上方區域；第一次使用畫面顯示「尚無查詢紀錄」。</li>
+  <li>按下方藍色<b>「查詢」</b>按鈕。第一次會跳出金鑰設定視窗：
+    <ul>
+      <li>貼上您的 API Key 與 Secret Key（Secret Key 會以星號顯示）。</li>
+      <li>選擇帳戶模式：一般請選 <b>🟢 真實帳戶</b>；若您申請的是模擬環境金鑰才選 🧪 模擬帳戶。</li>
+      <li>按「確認」。</li>
+    </ul>
+  </li>
+  <li>登入與查詢通常數秒內完成，儀表板隨即顯示最新用量，左上角狀態變成「● 已登入」。</li>
+</ol>
+<div class="tip">金鑰輸入一次即可：程式會<b>加密</b>保存在您這台電腦、這個 Windows 帳戶底下，之後按「查詢」不必再輸入。</div>
+
+<!-- ══════════ 畫面導覽 ══════════ -->
+<h2>畫面導覽</h2>
+
+<p><b>主畫面（儀表板）</b>——開啟程式後看到的畫面：</p>
+<figure>
+<svg viewBox="0 0 640 380" role="img" aria-label="主畫面示意圖">
+  <!-- 視窗外框 -->
+  <rect x="10" y="10" width="620" height="360" rx="10" fill="#ffffff" stroke="#b8c2cc"/>
+  <!-- 標題列 -->
+  <rect x="10" y="10" width="620" height="34" rx="10" fill="#f0f2f4" stroke="#dfe4e8"/>
+  <rect x="10" y="30" width="620" height="14" fill="#f0f2f4"/>
+  <rect x="24" y="20" width="14" height="14" rx="3" fill="#2780e3"/>
+  <text x="46" y="32" font-size="12" fill="#2c3e50" font-family="sans-serif">永豐金 API 用量評估工具 - by Alex Yu - v20260712</text>
+  <text x="600" y="32" font-size="12" fill="#7f8c8d" font-family="sans-serif">— ▢ ✕</text>
+  <!-- 狀態列 -->
+  <circle cx="40" cy="68" r="5" fill="#27ae60"/>
+  <text x="52" y="72" font-size="13" fill="#27ae60" font-family="sans-serif" font-weight="bold">已登入（真實帳戶）</text>
+  <line x1="30" y1="86" x2="610" y2="86" stroke="#dfe4e8"/>
+  <!-- 圓形儀表 -->
+  <circle cx="150" cy="185" r="62" fill="none" stroke="#e9edf1" stroke-width="18"/>
+  <path d="M150 123 A62 62 0 0 1 205 153" fill="none" stroke="#2780e3" stroke-width="18"/>
+  <text x="150" y="182" font-size="26" fill="#2c3e50" font-family="sans-serif" font-weight="bold" text-anchor="middle">24 %</text>
+  <text x="150" y="202" font-size="11" fill="#7f8c8d" font-family="sans-serif" text-anchor="middle">今日流量用量</text>
+  <!-- 明細 -->
+  <text x="270" y="150" font-size="16" fill="#2c3e50" font-family="sans-serif" font-weight="bold">已用流量：123.5 MB</text>
+  <text x="270" y="176" font-size="14" fill="#2c3e50" font-family="sans-serif">每日上限：512.0 MB</text>
+  <text x="270" y="200" font-size="14" fill="#2c3e50" font-family="sans-serif">剩餘流量：388.5 MB</text>
+  <text x="270" y="228" font-size="14" fill="#2c3e50" font-family="sans-serif">目前連線數：1 / 5</text>
+  <!-- 上次查詢 -->
+  <text x="30" y="286" font-size="12" fill="#7f8c8d" font-family="sans-serif">上次查詢：2026-07-12 14:30:05（真實帳戶）</text>
+  <!-- 按鈕 -->
+  <rect x="30" y="304" width="430" height="42" rx="6" fill="#2780e3"/>
+  <text x="245" y="330" font-size="15" fill="#fff" font-family="sans-serif" font-weight="bold" text-anchor="middle">查詢</text>
+  <rect x="472" y="304" width="138" height="42" rx="6" fill="#fff" stroke="#dfe4e8"/>
+  <text x="541" y="330" font-size="14" fill="#7f8c8d" font-family="sans-serif" text-anchor="middle">金鑰設定</text>
+</svg>
+<figcaption>主畫面：① 左上狀態燈　② 圓形儀表（今日流量 %）　③ 右側數值明細與連線數　④ 上次查詢時間　⑤ 查詢／金鑰設定按鈕</figcaption>
+</figure>
+
+<div class="tip">當今日流量使用達 <b>80%</b> 時，圓形儀表會由藍色變成 <b>紅色</b>，提醒您流量快用完。</div>
+
+<p><b>金鑰設定視窗</b>——第一次查詢、或您按「金鑰設定」時出現：</p>
+<figure>
+<svg viewBox="0 0 560 320" role="img" aria-label="金鑰設定視窗示意圖">
+  <rect x="10" y="10" width="540" height="300" rx="10" fill="#ffffff" stroke="#b8c2cc"/>
+  <rect x="10" y="10" width="540" height="32" rx="10" fill="#f0f2f4" stroke="#dfe4e8"/>
+  <rect x="10" y="28" width="540" height="14" fill="#f0f2f4"/>
+  <text x="26" y="30" font-size="12" fill="#2c3e50" font-family="sans-serif">🔑 永豐金證券 Shioaji API 金鑰設定</text>
+  <text x="528" y="30" font-size="12" fill="#7f8c8d" font-family="sans-serif">✕</text>
+  <text x="30" y="66" font-size="14" fill="#2c3e50" font-family="sans-serif" font-weight="bold">永豐金證券 Shioaji API 憑證設定</text>
+  <text x="30" y="86" font-size="10" fill="#7f8c8d" font-family="sans-serif">API Key 與 Secret Key 請至 www.sinotrade.com.tw/newweb/PythonAPIKey/ 申請</text>
+  <!-- 欄位 -->
+  <text x="30" y="122" font-size="13" fill="#2c3e50" font-family="sans-serif">API Key：</text>
+  <rect x="120" y="108" width="400" height="24" rx="4" fill="#fbfcfd" stroke="#dfe4e8"/>
+  <text x="30" y="158" font-size="13" fill="#2c3e50" font-family="sans-serif">Secret Key：</text>
+  <rect x="120" y="144" width="400" height="24" rx="4" fill="#fbfcfd" stroke="#dfe4e8"/>
+  <text x="130" y="161" font-size="13" fill="#7f8c8d" font-family="sans-serif">＊＊＊＊＊＊＊＊</text>
+  <line x1="30" y1="186" x2="520" y2="186" stroke="#dfe4e8"/>
+  <!-- 帳戶模式 -->
+  <text x="30" y="212" font-size="13" fill="#2c3e50" font-family="sans-serif">帳戶模式：</text>
+  <circle cx="126" cy="208" r="6" fill="#fff" stroke="#2780e3" stroke-width="2"/>
+  <circle cx="126" cy="208" r="3" fill="#2780e3"/>
+  <text x="138" y="212" font-size="13" fill="#2c3e50" font-family="sans-serif">🟢 真實帳戶</text>
+  <circle cx="250" cy="208" r="6" fill="#fff" stroke="#b8c2cc" stroke-width="2"/>
+  <text x="262" y="212" font-size="13" fill="#2c3e50" font-family="sans-serif">🧪 模擬帳戶</text>
+  <!-- 按鈕 -->
+  <rect x="30" y="256" width="240" height="36" rx="6" fill="#2780e3"/>
+  <text x="150" y="279" font-size="14" fill="#fff" font-family="sans-serif" font-weight="bold" text-anchor="middle">確認</text>
+  <rect x="280" y="256" width="240" height="36" rx="6" fill="#fff" stroke="#dfe4e8"/>
+  <text x="400" y="279" font-size="14" fill="#7f8c8d" font-family="sans-serif" text-anchor="middle">取消</text>
+</svg>
+<figcaption>金鑰設定視窗：填入 API Key／Secret Key，選擇真實或模擬帳戶，按「確認」儲存。</figcaption>
+</figure>
+
+<!-- ══════════ 結果解讀 ══════════ -->
+<h2>結果解讀</h2>
+<table>
+  <tr><th>畫面項目</th><th>意義與正常範圍</th></tr>
+  <tr><td>左上狀態燈</td><td><b>綠色「已登入」</b>＝目前已連上永豐金、數字為即時查詢結果；<b>灰色「未連線」</b>＝畫面顯示的是上次的舊紀錄（重開程式時的預設狀態），按「查詢」才會更新。</td></tr>
+  <tr><td>圓形儀表（%）</td><td>今日流量已使用的百分比。0–79% 為藍色屬正常；<b>達 80% 變紅色</b>，代表流量即將用完，建議減少大量資料查詢或等隔日重置。</td></tr>
+  <tr><td>已用流量 / 每日上限 / 剩餘流量</td><td>今日的實際數值。額度由永豐金每日重置，故「已用」會在重置後歸零、「剩餘」回到接近上限。</td></tr>
+  <tr><td>目前連線數 X / 5</td><td>這組憑證目前佔用的 API 連線數，上限 5 條。本工具查詢後會保持 1 條連線直到您關閉視窗。若數字比預期大，通常是您其他程式也用了同一組金鑰。</td></tr>
+  <tr><td>上次查詢：…</td><td>最近一次成功查詢的時間與當時的帳戶模式（真實／模擬）。關掉程式再開，仍會先顯示這筆，方便您回顧。</td></tr>
+</table>
+
+<!-- ══════════ 使用建議與限制 ══════════ -->
+<h2>使用建議與限制</h2>
+<ul>
+  <li><b>更換金鑰或帳戶模式</b>：按「金鑰設定」修改後按「確認」。若當時已登入，程式會自動登出，下次按「查詢」即以新設定重新登入。</li>
+  <li><b>真實與模擬帳戶分開計算</b>：兩種模式的用量額度互不相干，查到的數字不能互相比較。</li>
+  <li><b>連線會被佔用</b>：查詢後本工具保留 1 條連線直到您關閉視窗。若您同時要跑會大量連線的交易程式，記得關掉本工具以釋放連線。</li>
+  <li><b>資料只留在本機</b>：程式會在執行檔旁自動建立一個隱藏資料夾，存放您的設定與上次查詢紀錄；金鑰以 Windows 帳戶綁定加密保存，別人拿走檔案也無法解讀。</li>
+  <li><b>換電腦或換 Windows 帳戶要重輸金鑰</b>：因為加密綁定這台電腦與這個 Windows 使用者，換環境後第一次查詢需重新輸入金鑰，屬正常現象。</li>
+  <li><b>本工具不能做什麼</b>：它<b>只查用量</b>，不下單、不看報價、不做任何交易；數字僅供參考，一切以永豐金官方系統為準。</li>
+</ul>
+
+<!-- ══════════ 常見問題與疑難排解 ══════════ -->
+<h2>常見問題與疑難排解</h2>
+<table>
+  <tr><th>狀況 / 訊息</th><th>處理方式</th></tr>
+  <tr><td>「API Key 或 Secret Key 不正確」</td><td>按「金鑰設定」重新貼上金鑰（注意前後不要多空白）。若 Secret Key 遺失，請到永豐金申請頁重新申請一組。</td></tr>
+  <tr><td>「連線被拒絕」「TCP 連線失敗」「授權逾時」</td><td>多半是網路環境（公司防火牆、代理、VPN、資安軟體）擋住對外連線，<b>不一定是金鑰錯</b>。可改用手機熱點交叉測試，或請 IT 放行本程式。</td></tr>
+  <tr><td>第一次開啟很慢，或防毒軟體警示</td><td>單一執行檔第一次啟動需解壓縮，等幾秒屬正常；部分防毒對這類程式較敏感，將檔案加入允許清單即可。</td></tr>
+  <tr><td>流量什麼時候歸零？</td><td>額度由永豐金<b>每日重置</b>；確切重置時間以永豐金官方公告為準。</td></tr>
+  <tr><td>連線數看起來比預期多</td><td>同一組金鑰在其他程式（含您自己的交易程式）的連線也會計入。關閉本工具會釋放它佔用的那 1 條。</td></tr>
+  <tr><td>想清除所有資料</td><td>關閉程式後，刪除執行檔旁那個隱藏資料夾即可（之後再開會回到「尚無查詢紀錄」，需重新輸入金鑰）。</td></tr>
+</table>
+
+<div class="warn">本工具僅供查詢參考，用量數字以永豐金證券官方系統為準。使用本工具所產生之任何結果，作者不負擔保責任。API 金鑰屬個人機密，請勿提供給他人。</div>
+
+<div class="foot">永豐金 API 用量評估工具 — by Alex Yu　·　適用版本 v20260712（2026-07-12）</div>
+
+</div>
+</body>
+</html>
